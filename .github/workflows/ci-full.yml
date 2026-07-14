@@ -1,15 +1,18 @@
-name: CandyCode Service - CI (Push)
+﻿name: CI - Full Pipeline
 
 on:
   push:
     branches:
+      - main
+      - develop
+      - "feature/**"
+      - "feat/garcia"
+  pull_request:
+    branches:
       - master
       - qa
-      - "feature/**"
-      - feat/garcia
-
-env:
-  IMAGE_NAME: ${{ github.repository }}
+      - main
+      - develop
 
 jobs:
   build-test-analyze:
@@ -21,7 +24,7 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: candycode_db
+          POSTGRES_DB: users_players_db
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         ports:
@@ -60,7 +63,7 @@ jobs:
 
       - name: Ejecutar pruebas
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/candycode_db
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/users_players_db
           SPRING_DATASOURCE_USERNAME: test
           SPRING_DATASOURCE_PASSWORD: test
         run: ./mvnw --batch-mode --no-transfer-progress test
@@ -73,14 +76,14 @@ jobs:
           path: target/surefire-reports/
           retention-days: 7
 
-      - name: Análisis estático con SonarQube
+      - name: Análisis con SonarCloud
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./mvnw --batch-mode --no-transfer-progress sonar:sonar \
-            -Dsonar.projectKey=TECH-CUP-2026-INT_candycode-service \
+            -Dsonar.projectKey=TECH-CUP-2026-INT_cc-users-players-service \
             -Dsonar.organization=tech-cup-2026-int \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
@@ -93,7 +96,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: candycode-service-jar
+          name: users-players-service-jar
           path: target/*.jar
           retention-days: 14
 
@@ -101,10 +104,11 @@ jobs:
     name: Build & Publish Docker Image
     needs: build-test-analyze
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/qa'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -119,7 +123,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Calcular metadatos de la imagen
+      - name: Generar metadatos de la imagen
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -127,7 +131,7 @@ jobs:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
-            type=sha,prefix=,format=short
+            type=sha
 
       - name: Construir y publicar imagen Docker
         uses: docker/build-push-action@v6
@@ -142,9 +146,11 @@ jobs:
   deploy:
     name: Deploy a Azure App Service
     needs: dockerize-publish
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     environment: production
+    permissions:
+      contents: read
 
     steps:
       - name: Desplegar contenedor en Azure App Service
@@ -152,4 +158,4 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ghcr.io/${{ env.IMAGE_NAME }}:master
+          images: ghcr.io/${{ env.IMAGE_NAME }}:latest
