@@ -1,0 +1,54 @@
+# ── CI Pipeline — users-players-service ─────────────────────────────────────
+# Runs on every push and pull request to develop and main.
+# MongoDB is handled by Flapdoodle (embedded) — no external MongoDB needed in CI.
+
+name: CI — users-players-service
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile
+        run: mvn compile --no-transfer-progress
+
+      # Flapdoodle auto-activates in test scope — no profile or external MongoDB needed
+      - name: Run tests
+        run: mvn test --no-transfer-progress
+
+      - name: Generate coverage report
+        run: mvn jacoco:report --no-transfer-progress
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report-users
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: surefire-reports-users
+          path: target/surefire-reports/
+          retention-days: 7

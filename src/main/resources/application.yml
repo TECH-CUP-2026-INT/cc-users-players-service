@@ -1,0 +1,24 @@
+# ── users-players-service ────────────────────────────────────────────────────
+spring:
+  application:
+    name: service-users
+
+  # ── MongoDB (único motor de BD) ──────────────────────────────────────────
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/techcup_users}
+      auto-index-creation: true
+
+  # ── Deshabilitar JPA (solo usamos MongoDB) ────────────────────────────────
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+server:
+  port: ${PORT:8082}
+
+logging:
+  level:
+    co.edu.escuelaing.techcup: DEBUG
+    org.springframework.data.mongodb: DEBUG

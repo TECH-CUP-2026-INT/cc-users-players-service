@@ -30,8 +30,6 @@ import static org.mockito.Mockito.*;
  *   TC-14 — Consult Sports Profile
  *   TC-17 — Update Sports Profile (create + update flows)
  *   TC-15 — Audit log is recorded on every operation
- *
- * All dependencies are mocked — no Spring context or DB required.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -44,12 +42,13 @@ class SportProfileServiceTest {
     @InjectMocks
     private SportProfileService sportProfileService;
 
-    private final UUID playerId   = UUID.randomUUID();
-    private final UUID requesterId = UUID.randomUUID();
+    // IDs como String — MongoDB usa String como tipo de id
+    private final String playerId    = UUID.randomUUID().toString();
+    private final String requesterId = UUID.randomUUID().toString();
 
     private SportProfile existingProfile() {
         return SportProfile.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.randomUUID().toString())
                 .userId(playerId)
                 .position(Position.GOALKEEPER)
                 .jerseyNumber(1)
@@ -126,7 +125,7 @@ class SportProfileServiceTest {
         @DisplayName("Should return profile without photo when photoUrl is null")
         void shouldReturnProfileWithNullPhoto() {
             SportProfile profileNoPhoto = SportProfile.builder()
-                    .id(UUID.randomUUID())
+                    .id(UUID.randomUUID().toString())
                     .userId(playerId)
                     .position(Position.FORWARD)
                     .jerseyNumber(9)
@@ -155,12 +154,12 @@ class SportProfileServiceTest {
         @Test
         @DisplayName("Should create profile when player has none yet")
         void shouldCreateProfileWhenNoneExists() {
-            when(sportProfileRepository.findByUserId(playerId))
-                    .thenReturn(Optional.empty());
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(false);
+            when(sportProfileRepository.findByUserId(playerId)).thenReturn(Optional.empty());
             when(sportProfileRepository.save(any(SportProfile.class)))
                     .thenAnswer(i -> {
                         SportProfile p = i.getArgument(0);
-                        p.setId(UUID.randomUUID());
+                        p.setId(UUID.randomUUID().toString());
                         return p;
                     });
 
@@ -176,9 +175,9 @@ class SportProfileServiceTest {
         @Test
         @DisplayName("Should update profile when player already has one")
         void shouldUpdateExistingProfile() {
-            SportProfile existing = existingProfile();
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(true);
             when(sportProfileRepository.findByUserId(playerId))
-                    .thenReturn(Optional.of(existing));
+                    .thenReturn(Optional.of(existingProfile()));
             when(sportProfileRepository.save(any(SportProfile.class)))
                     .thenAnswer(i -> i.getArgument(0));
 
@@ -193,9 +192,9 @@ class SportProfileServiceTest {
         @Test
         @DisplayName("Should update photo when photoUrl is provided")
         void shouldUpdatePhotoWhenProvided() {
-            SportProfile existing = existingProfile();
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(true);
             when(sportProfileRepository.findByUserId(playerId))
-                    .thenReturn(Optional.of(existing));
+                    .thenReturn(Optional.of(existingProfile()));
             when(sportProfileRepository.save(any(SportProfile.class)))
                     .thenAnswer(i -> i.getArgument(0));
 
@@ -208,24 +207,23 @@ class SportProfileServiceTest {
         @Test
         @DisplayName("Should not overwrite photo when photoUrl is null in request")
         void shouldNotOverwritePhotoWhenNull() {
-            SportProfile existing = existingProfile();
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(true);
             when(sportProfileRepository.findByUserId(playerId))
-                    .thenReturn(Optional.of(existing));
+                    .thenReturn(Optional.of(existingProfile()));
             when(sportProfileRepository.save(any(SportProfile.class)))
                     .thenAnswer(i -> i.getArgument(0));
 
             SportProfileRequest req = buildRequest(Position.FORWARD, 7, null);
             SportProfileResponse response = sportProfileService.updateProfile(playerId, req);
 
-            // Photo should remain from existing profile
             assertThat(response.getPhotoUrl()).isEqualTo("https://storage/photo.jpg");
         }
 
         @Test
         @DisplayName("Should record CREATE audit event when profile is new (TC-15)")
         void shouldRecordCreateAuditEvent() {
-            when(sportProfileRepository.findByUserId(playerId))
-                    .thenReturn(Optional.empty());
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(false);
+            when(sportProfileRepository.findByUserId(playerId)).thenReturn(Optional.empty());
             when(sportProfileRepository.save(any(SportProfile.class)))
                     .thenAnswer(i -> i.getArgument(0));
 
@@ -242,6 +240,7 @@ class SportProfileServiceTest {
         @Test
         @DisplayName("Should record UPDATE audit event when profile already exists (TC-15)")
         void shouldRecordUpdateAuditEvent() {
+            when(sportProfileRepository.existsByUserId(playerId)).thenReturn(true);
             when(sportProfileRepository.findByUserId(playerId))
                     .thenReturn(Optional.of(existingProfile()));
             when(sportProfileRepository.save(any(SportProfile.class)))

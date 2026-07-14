@@ -10,7 +10,6 @@ import co.edu.escuelaing.techcup.users.exception.ResourceNotFoundException;
 import co.edu.escuelaing.techcup.users.repository.AuditEventRepository;
 import co.edu.escuelaing.techcup.users.repository.SportProfileRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
@@ -20,9 +19,7 @@ import java.util.UUID;
  *   TC-14 — Consult Sports Profile
  *   TC-17 — Update Sports Profile
  *
- * Every operation is recorded in {@code audit_events} for TC-15.
- * The API Gateway is responsible for JWT validation — this service
- * receives the userId extracted from the token as a request header.
+ * Every operation is recorded in audit_events collection for TC-15.
  */
 @Service
 public class SportProfileService {
@@ -36,17 +33,9 @@ public class SportProfileService {
         this.auditEventRepository   = auditEventRepository;
     }
 
-    //TC-14 Consult Sports Profile
+    // ── TC-14 Consult Sports Profile ──────────────────────────────────────
 
-    /**
-     * Returns the sports profile of a player identified by their userId.
-     * Any authenticated user can consult any player's profile (TC-14).
-     *
-     * @param userId    UUID of the player from identity-service
-     * @param requesterId UUID of the user making the request (for audit)
-     * @return the player's sports profile data
-     */
-    public SportProfileResponse getProfile(UUID userId, UUID requesterId) {
+    public SportProfileResponse getProfile(String userId, String requesterId) {
         SportProfile profile = sportProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Sports profile not found for user: " + userId));
@@ -57,24 +46,14 @@ public class SportProfileService {
         return toResponse(profile);
     }
 
-    // TC-17 Update Sports Profile
+    // ── TC-17 Update Sports Profile ───────────────────────────────────────
 
-    /**
-     * Updates an existing sports profile.
-     * If no profile exists yet for the userId, creates one (TC-13 flow).
-     * The tournament-active restriction is enforced at the teams-service level.
-     *
-     * @param userId  UUID of the player from identity-service
-     * @param request updated profile data
-     * @return the updated sports profile
-     */
-    @Transactional
-    public SportProfileResponse updateProfile(UUID userId, SportProfileRequest request) {
+    public SportProfileResponse updateProfile(String userId, SportProfileRequest request) {
+        // Capture isNew BEFORE save to correctly detect create vs update
+        boolean isNew = !sportProfileRepository.existsByUserId(userId);
+
         SportProfile profile = sportProfileRepository.findByUserId(userId)
                 .orElse(SportProfile.builder().userId(userId).build());
-
-        // ← Capturar si es nuevo ANTES del save
-        boolean isNew = profile.getId() == null;
 
         profile.setPosition(request.getPosition());
         profile.setJerseyNumber(request.getJerseyNumber());
@@ -96,12 +75,9 @@ public class SportProfileService {
         return toResponse(saved);
     }
 
-    // Internal helpers
+    // ── Internal helpers ──────────────────────────────────────────────────
 
-    /**
-     * Persists an audit event entry for TC-15.
-     */
-    private void log(UUID userId, ActionType actionType,
+    private void log(String userId, ActionType actionType,
                      String description, ActionResult result) {
         auditEventRepository.save(AuditEvent.builder()
                 .userId(userId)
@@ -111,9 +87,6 @@ public class SportProfileService {
                 .build());
     }
 
-    /**
-     * Maps a SportProfile entity to its response DTO.
-     */
     private SportProfileResponse toResponse(SportProfile profile) {
         return SportProfileResponse.builder()
                 .id(profile.getId())

@@ -21,9 +21,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for AuditService.
- *
- * Tests covered:
- *   TC-15 — Consult Users and Players Service Events
+ * TC-15 — Consult Users and Players Service Events
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -35,11 +33,12 @@ class AuditServiceTest {
     @InjectMocks
     private AuditService auditService;
 
-    private final UUID userId = UUID.randomUUID();
+    // IDs como String — MongoDB usa String como tipo de id
+    private final String userId = UUID.randomUUID().toString();
 
     private AuditEvent buildEvent(ActionType type) {
         return AuditEvent.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .actionType(type)
                 .description("Test event")

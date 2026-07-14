@@ -24,7 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Integration tests for SportProfileController and AuditController.
- * Uses H2 in-memory database and disables Spring Security.
+ * Uses Flapdoodle (MongoDB embebido) — no PostgreSQL ni H2 necesarios.
+ * Spring Security deshabilitado via TestSecurityConfig.
  *
  * Tests covered:
  *   TC-14 — GET  /players/{userId}/profile
@@ -39,13 +40,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SportProfileControllerIntegrationTest {
 
-    @Autowired private MockMvc                 mockMvc;
-    @Autowired private SportProfileRepository  sportProfileRepository;
-    @Autowired private AuditEventRepository    auditEventRepository;
-    @Autowired private ObjectMapper            objectMapper;
+    @Autowired private MockMvc                mockMvc;
+    @Autowired private SportProfileRepository sportProfileRepository;
+    @Autowired private AuditEventRepository   auditEventRepository;
+    @Autowired private ObjectMapper           objectMapper;
 
-    private final UUID playerId    = UUID.randomUUID();
-    private final UUID requesterId = UUID.randomUUID();
+    // IDs como String — MongoDB usa String como tipo de id
+    private final String playerId    = UUID.randomUUID().toString();
+    private final String requesterId = UUID.randomUUID().toString();
 
     @BeforeEach
     void setUp() {
@@ -94,7 +96,7 @@ class SportProfileControllerIntegrationTest {
             mockMvc.perform(get("/players/{userId}/profile", playerId)
                             .header("X-User-Id", requesterId))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.userId").value(playerId.toString()))
+                    .andExpect(jsonPath("$.userId").value(playerId))
                     .andExpect(jsonPath("$.position").value("GOALKEEPER"))
                     .andExpect(jsonPath("$.jerseyNumber").value(1))
                     .andExpect(jsonPath("$.photoUrl").value("https://storage/photo.jpg"));
@@ -104,7 +106,7 @@ class SportProfileControllerIntegrationTest {
         @Order(2)
         @DisplayName("Should return 404 when player has no profile")
         void shouldReturn404WhenProfileNotFound() throws Exception {
-            mockMvc.perform(get("/players/{userId}/profile", UUID.randomUUID())
+            mockMvc.perform(get("/players/{userId}/profile", UUID.randomUUID().toString())
                             .header("X-User-Id", requesterId))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.success").value(false))
@@ -154,7 +156,7 @@ class SportProfileControllerIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequestBody("MIDFIELDER", 8, null)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.userId").value(playerId.toString()))
+                    .andExpect(jsonPath("$.userId").value(playerId))
                     .andExpect(jsonPath("$.position").value("MIDFIELDER"))
                     .andExpect(jsonPath("$.jerseyNumber").value(8));
         }
@@ -180,7 +182,7 @@ class SportProfileControllerIntegrationTest {
         @DisplayName("Should return 403 when requester is not the profile owner")
         void shouldReturn403WhenNotOwner() throws Exception {
             mockMvc.perform(put("/players/{userId}/profile", playerId)
-                            .header("X-User-Id", UUID.randomUUID())
+                            .header("X-User-Id", UUID.randomUUID().toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequestBody("DEFENDER", 4, null)))
                     .andExpect(status().isForbidden());
@@ -296,7 +298,7 @@ class SportProfileControllerIntegrationTest {
 
         @Test
         @Order(3)
-        @DisplayName("Should return 403 when X-User-Role is missing")
+        @DisplayName("Should return 400 when X-User-Role is missing")
         void shouldReturn400WhenRoleHeaderMissing() throws Exception {
             mockMvc.perform(get("/audit/events"))
                     .andExpect(status().isBadRequest());
@@ -308,7 +310,7 @@ class SportProfileControllerIntegrationTest {
         void shouldFilterByUserId() throws Exception {
             seedAuditEvent(AuditEvent.ActionType.CONSULT_SPORT_PROFILE);
             auditEventRepository.save(AuditEvent.builder()
-                    .userId(UUID.randomUUID())
+                    .userId(UUID.randomUUID().toString())
                     .actionType(AuditEvent.ActionType.UPDATE_SPORT_PROFILE)
                     .description("Other user event")
                     .result(AuditEvent.ActionResult.SUCCESS)
@@ -316,10 +318,10 @@ class SportProfileControllerIntegrationTest {
 
             mockMvc.perform(get("/audit/events")
                             .header("X-User-Role", "ADMIN")
-                            .param("userId", playerId.toString()))
+                            .param("userId", playerId))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].userId").value(playerId.toString()));
+                    .andExpect(jsonPath("$[0].userId").value(playerId));
         }
 
         @Test

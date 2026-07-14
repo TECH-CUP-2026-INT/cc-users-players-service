@@ -8,17 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * REST controller for audit log operations.
- *
- * Access is restricted to Admin role only (TC-15).
- * The API Gateway validates the JWT and forwards the user role
- * in the {@code X-User-Role} header. Requests without ADMIN role are rejected.
- *
- * Covered requirements:
- *   TC-15 — GET /audit/events — Consult Users and Players Service Events
+ * TC-15 — GET /audit/events — Admin only
  */
 @RestController
 @RequestMapping("/audit")
@@ -30,21 +23,10 @@ public class AuditController {
         this.auditService = auditService;
     }
 
-    /**
-     * TC-15 — Consult Users and Players Service Events.
-     * All query parameters are optional — if none provided, returns all events.
-     *
-     * @param userRole    X-User-Role header forwarded by API Gateway (must be ADMIN)
-     * @param userId      optional filter by user UUID
-     * @param actionType  optional filter by action type
-     * @param from        optional start of date range (ISO format)
-     * @param to          optional end of date range (ISO format)
-     * @return list of audit events matching the filters
-     */
     @GetMapping("/events")
     public ResponseEntity<List<AuditEventResponse>> getEvents(
             @RequestHeader("X-User-Role") String userRole,
-            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) String userId,
             @RequestParam(required = false) AuditEvent.ActionType actionType,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,

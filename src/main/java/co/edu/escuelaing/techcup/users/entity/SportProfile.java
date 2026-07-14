@@ -1,25 +1,25 @@
 package co.edu.escuelaing.techcup.users.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Represents the sports profile of a registered player.
- * Maps to the {@code sport_profiles} table in PostgreSQL.
+ * Stored in the {@code sport_profiles} MongoDB collection.
  *
  * Each player has at most one sports profile linked by their userId
- * from the identity-service. The profile cannot be deleted (TC-13 business rule).
+ * from the identity-service.
  *
  * Covered requirements:
  *   TC-14 — Consult Sports Profile
  *   TC-17 — Update Sports Profile
  */
-@Entity
-@Table(name = "sport_profiles")
+@Document(collection = "sport_profiles")
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,47 +27,37 @@ import java.util.UUID;
 public class SportProfile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
     /**
      * References the user in identity-service.
-     * Unique — one sports profile per player.
+     * Indexed and unique — one sports profile per player.
      */
-    @Column(name = "user_id", nullable = false, unique = true)
-    private UUID userId;
+    @Indexed(unique = true)
+    private String userId;
 
     /**
-     * Player's preferred field position (TC-13, TC-17).
+     * Player's preferred field position.
      */
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Position position;
 
     /**
-     * Player's jersey number (TC-13, TC-17).
+     * Player's jersey number.
      * Uniqueness within a team is enforced at the teams-service level.
      */
-    @Column(name = "jersey_number", nullable = false)
     private Integer jerseyNumber;
 
     /**
-     * URL or path to the player's profile photo (TC-17).
-     * Null when no photo has been uploaded — the frontend
-     * displays the jersey number as avatar in that case.
+     * URL or path to the player's profile photo.
+     * Null when no photo has been uploaded.
      */
-    @Column(name = "photo_url")
     private String photoUrl;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    // ── Enum ──────────────────────────────────────────────────────────────
 
     public enum Position {
         GOALKEEPER,
