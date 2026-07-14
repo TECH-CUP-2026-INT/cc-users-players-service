@@ -1,9 +1,7 @@
 package com.techcup.ccusersplayers.dto.request;
-
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.util.UUID;
-
 @Data
 public class SportsProfileRequest {
     @NotNull(message = "El número de dorsal es requerido")

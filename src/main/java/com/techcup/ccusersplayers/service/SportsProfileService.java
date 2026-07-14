@@ -1,5 +1,4 @@
 package com.techcup.ccusersplayers.service;
-
 import com.techcup.ccusersplayers.dto.request.SportsProfileRequest;
 import com.techcup.ccusersplayers.dto.response.SportsProfileResponse;
 import com.techcup.ccusersplayers.exception.BusinessException;
@@ -10,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
