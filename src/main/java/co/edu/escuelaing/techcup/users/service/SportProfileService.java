@@ -73,6 +73,9 @@ public class SportProfileService {
         SportProfile profile = sportProfileRepository.findByUserId(userId)
                 .orElse(SportProfile.builder().userId(userId).build());
 
+        // ← Capturar si es nuevo ANTES del save
+        boolean isNew = profile.getId() == null;
+
         profile.setPosition(request.getPosition());
         profile.setJerseyNumber(request.getJerseyNumber());
 
@@ -82,7 +85,6 @@ public class SportProfileService {
 
         SportProfile saved = sportProfileRepository.save(profile);
 
-        boolean isNew = profile.getId() == null;
         ActionType actionType = isNew
                 ? ActionType.CREATE_SPORT_PROFILE
                 : ActionType.UPDATE_SPORT_PROFILE;

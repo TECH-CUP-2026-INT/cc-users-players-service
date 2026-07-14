@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import org.springframework.web.bind.MissingRequestHeaderException;
 /**
  * Centralized exception handler for the users-players-service.
  * Translates exceptions into consistent API responses.
@@ -59,4 +59,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse("An unexpected error occurred.", false));
     }
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse> handleMissingRequestHeaderException(MissingRequestHeaderException ex){
+    return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body( new ApiResponse("Required header '"+ex.getHeaderName()+ " ' is missing. ",false));
+    }
+
 }
