@@ -32,13 +32,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   TC-15 — GET  /audit/events
  *   TC-17 — PUT  /players/{userId}/profile
  */
-@SpringBootTest
+@SpringBootTest(properties = "de.flapdoodle.mongodb.embedded.version=7.0.2")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestSecurityConfig.class)
 @DisplayName("SportProfile & Audit Integration Tests")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SportProfileControllerIntegrationTest {
+
 
     @Autowired private MockMvc                mockMvc;
     @Autowired private SportProfileRepository sportProfileRepository;
