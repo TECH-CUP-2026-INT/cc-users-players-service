@@ -1,4 +1,4 @@
-﻿server:
+server:
   port: 8081
   address: 0.0.0.0
 spring:
@@ -12,3 +12,20 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: cc-users-players-service
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
