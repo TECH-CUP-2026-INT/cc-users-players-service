@@ -1,0 +1,10 @@
+﻿package co.edu.escuelaing.techcup.users.core.ports.out;
+
+import co.edu.escuelaing.techcup.users.core.domain.OTP;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+public interface OTPRepositoryPort {
+    OTP save(OTP otp);
+    Optional<OTP> findTopByUsuarioIdAndUsadoFalseAndFechaExpiracionAfter(String usuarioId, LocalDateTime now);
+}
