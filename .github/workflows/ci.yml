@@ -33,6 +33,11 @@ jobs:
         env:
           IDENTITY_SERVICE_URL: http://localhost:8081
 
+      - name: SonarCloud analysis
+        run: mvn sonar:sonar -B -Psonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          IDENTITY_SERVICE_URL: http://localhost:8081
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
