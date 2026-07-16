@@ -34,8 +34,9 @@ jobs:
           IDENTITY_SERVICE_URL: http://localhost:8081
 
       - name: SonarCloud analysis
-        run: mvn sonar:sonar -B -Psonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        uses: sonarsource/sonarcloud-github-action@master
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           IDENTITY_SERVICE_URL: http://localhost:8081
 
       - name: Upload test reports
