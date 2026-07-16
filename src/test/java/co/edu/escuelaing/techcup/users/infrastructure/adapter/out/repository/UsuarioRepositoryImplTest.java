@@ -34,14 +34,14 @@ class UsuarioRepositoryImplTest {
     @BeforeEach
     void setUp() {
         MongoTemplate mongoTemplate = new MongoTemplate(
-                new SimpleMongoClientDatabaseFactory(MONGO_CONTAINER.getConnectionString() + "/techcup_test"));
+                new SimpleMongoClientDatabaseFactory(MONGO_CONTAINER.getConnectionString() + "/techcup_test?uuidRepresentation=standard"));
         repository = new UsuarioRepositoryImpl(mongoTemplate);
     }
 
     @AfterEach
     void limpiarColeccion() {
         new MongoTemplate(new SimpleMongoClientDatabaseFactory(
-                MONGO_CONTAINER.getConnectionString() + "/techcup_test"))
+                MONGO_CONTAINER.getConnectionString() + "/techcup_test?uuidRepresentation=standard"))
                 .getDb().getCollection("usuarios").drop();
     }
 

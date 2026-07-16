@@ -34,14 +34,14 @@ class OTPRepositoryImplTest {
     @BeforeEach
     void setUp() {
         MongoTemplate mongoTemplate = new MongoTemplate(
-                new SimpleMongoClientDatabaseFactory(MONGO_CONTAINER.getConnectionString() + "/techcup_test"));
+                new SimpleMongoClientDatabaseFactory(MONGO_CONTAINER.getConnectionString() + "/techcup_test?uuidRepresentation=standard"));
         repository = new OTPRepositoryImpl(mongoTemplate);
     }
 
     @AfterEach
     void limpiarColeccion() {
         new MongoTemplate(new SimpleMongoClientDatabaseFactory(
-                MONGO_CONTAINER.getConnectionString() + "/techcup_test"))
+                MONGO_CONTAINER.getConnectionString() + "/techcup_test?uuidRepresentation=standard"))
                 .getDb().getCollection("otps").drop();
     }
 
