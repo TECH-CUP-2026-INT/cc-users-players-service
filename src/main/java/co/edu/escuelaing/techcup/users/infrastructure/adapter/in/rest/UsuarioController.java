@@ -1,23 +1,59 @@
-﻿package co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest;
+package co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.ports.in.ActualizarPerfilDeportivoUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.ActualizarRolUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.ConsultarPerfilUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.CrearAdminOrganizadorUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.CrearArbitroUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.DeshabilitarUsuarioUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.EditarPerfilUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.RegistroEgresadoUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.RegistroEstudianteUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.RegistroInvitadoUseCase;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.ActualizarPerfilDeportivoRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.ActualizarRolRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.CrearAdminOrganizadorRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.CrearArbitroRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.DeshabilitarUsuarioRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.EditarPerfilRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.PerfilDeportivoResponse;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.PerfilPublicoResponse;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.PerfilResponse;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.RegistroEgresadoRequest;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.RegistroEstudianteRequest;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.RegistroInvitadoRequest;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.RegistroResponse;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest.swagger.UsuarioControllerSwagger;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/usuarios")
-public class UsuarioController {
+@RequiredArgsConstructor
+public class UsuarioController implements UsuarioControllerSwagger {
 
     private final RegistroEstudianteUseCase registroEstudianteUseCase;
+    private final RegistroInvitadoUseCase registroInvitadoUseCase;
+    private final RegistroEgresadoUseCase registroEgresadoUseCase;
+    private final CrearArbitroUseCase crearArbitroUseCase;
+    private final CrearAdminOrganizadorUseCase crearAdminOrganizadorUseCase;
+    private final ConsultarPerfilUseCase consultarPerfilUseCase;
+    private final EditarPerfilUseCase editarPerfilUseCase;
+    private final ActualizarRolUseCase actualizarRolUseCase;
+    private final DeshabilitarUsuarioUseCase deshabilitarUsuarioUseCase;
+    private final ActualizarPerfilDeportivoUseCase actualizarPerfilDeportivoUseCase;
 
-    public UsuarioController(RegistroEstudianteUseCase registroEstudianteUseCase) {
-        this.registroEstudianteUseCase = registroEstudianteUseCase;
-    }
-
+    @Override
     @PostMapping("/registro/estudiante")
     @ResponseStatus(HttpStatus.CREATED)
     public RegistroResponse registrarEstudiante(@Valid @RequestBody RegistroEstudianteRequest request) {
@@ -31,11 +67,170 @@ public class UsuarioController {
             request.getNumeroIdentificacion()
         );
 
+        return respuestaRegistro(usuario, "Usuario registrado exitosamente. Se ha enviado un código OTP a tu correo.");
+    }
+
+    @Override
+    @PostMapping("/registro/invitado")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegistroResponse registrarInvitado(@Valid @RequestBody RegistroInvitadoRequest request) {
+        Usuario usuario = registroInvitadoUseCase.registrarInvitado(
+            request.getNombreCompleto(),
+            request.getCorreo(),
+            request.getContrasena(),
+            request.getTipoIdentificacion(),
+            request.getNumeroIdentificacion()
+        );
+
+        return respuestaRegistro(usuario, "Usuario registrado exitosamente. Se ha enviado un código OTP a tu correo.");
+    }
+
+    @Override
+    @PostMapping("/registro/egresado")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegistroResponse registrarEgresado(@Valid @RequestBody RegistroEgresadoRequest request) {
+        Usuario usuario = registroEgresadoUseCase.registrarEgresado(
+            request.getNombreCompleto(),
+            request.getCorreo(),
+            request.getContrasena(),
+            request.getTipoIdentificacion(),
+            request.getNumeroIdentificacion(),
+            request.getProgramaAcademico()
+        );
+
+        return respuestaRegistro(usuario, "Usuario registrado exitosamente. Se ha enviado un código OTP a tu correo.");
+    }
+
+    @Override
+    @PostMapping("/admin/arbitros")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegistroResponse crearArbitro(@Valid @RequestBody CrearArbitroRequest request) {
+        Usuario usuario = crearArbitroUseCase.crearArbitro(
+            request.getNombreCompleto(),
+            request.getCorreo(),
+            request.getTipoIdentificacion(),
+            request.getNumeroIdentificacion()
+        );
+
+        return respuestaRegistro(usuario, "Árbitro creado exitosamente. Se enviaron las credenciales temporales a su correo.");
+    }
+
+    @Override
+    @PostMapping("/admin/administradores")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegistroResponse crearAdminOrganizador(@Valid @RequestBody CrearAdminOrganizadorRequest request) {
+        Usuario usuario = crearAdminOrganizadorUseCase.crearAdminOrganizador(
+            request.getNombreCompleto(),
+            request.getCorreo(),
+            request.getTipoIdentificacion(),
+            request.getNumeroIdentificacion(),
+            request.getRol()
+        );
+
+        return respuestaRegistro(usuario, "Usuario creado exitosamente. Se enviaron las credenciales temporales a su correo.");
+    }
+
+    @Override
+    @GetMapping("/perfil")
+    public PerfilResponse consultarPerfilPropio() {
+        Usuario usuario = consultarPerfilUseCase.consultarPerfil(usuarioIdAutenticado());
+        return respuestaPerfil(usuario);
+    }
+
+    @Override
+    @PutMapping("/perfil")
+    public PerfilResponse editarPerfilPropio(@Valid @RequestBody EditarPerfilRequest request) {
+        Usuario usuario = editarPerfilUseCase.editarPerfil(
+            usuarioIdAutenticado(),
+            request.getNombreCompleto(),
+            request.getProgramaAcademico(),
+            request.getSemestre()
+        );
+        return respuestaPerfil(usuario);
+    }
+
+    private UUID usuarioIdAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return UUID.fromString((String) authentication.getPrincipal());
+    }
+
+    @Override
+    @GetMapping("/{userId}/perfil")
+    public PerfilPublicoResponse consultarPerfilDeOtroJugador(@PathVariable UUID userId) {
+        Usuario usuario = consultarPerfilUseCase.consultarPerfil(userId);
+        return new PerfilPublicoResponse(
+            usuario.getId().toString(),
+            usuario.getNombreCompleto(),
+            usuario.getTipoUsuario().name(),
+            usuario.getRol().name(),
+            usuario.getProgramaAcademico()
+        );
+    }
+
+    @Override
+    @PutMapping("/admin/{userId}/rol")
+    public RegistroResponse actualizarRol(@PathVariable UUID userId, @Valid @RequestBody ActualizarRolRequest request) {
+        Usuario usuario = actualizarRolUseCase.actualizarRol(userId, request.getRol());
+        return respuestaRegistro(usuario, "Rol actualizado a " + usuario.getRol());
+    }
+
+    @Override
+    @PutMapping("/admin/{userId}/deshabilitar")
+    public RegistroResponse deshabilitarUsuario(@PathVariable UUID userId,
+                                                 @Valid @RequestBody(required = false) DeshabilitarUsuarioRequest request) {
+        String motivo = request != null ? request.getMotivo() : null;
+        Usuario usuario = deshabilitarUsuarioUseCase.deshabilitarUsuario(userId, motivo);
+        return respuestaRegistro(usuario, "Usuario deshabilitado exitosamente");
+    }
+
+    @Override
+    @PutMapping(value = "/perfil/deportivo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public PerfilDeportivoResponse actualizarPerfilDeportivo(
+            @RequestPart("perfil") @Valid ActualizarPerfilDeportivoRequest request,
+            @RequestPart(value = "foto", required = false) MultipartFile foto) throws IOException {
+        byte[] fotoBytes = (foto != null && !foto.isEmpty()) ? foto.getBytes() : null;
+        String fotoContentType = (foto != null && !foto.isEmpty()) ? foto.getContentType() : null;
+
+        Usuario usuario = actualizarPerfilDeportivoUseCase.actualizarPerfilDeportivo(
+                usuarioIdAutenticado(),
+                request.getPosicionJuego(),
+                request.getNumeroCamiseta(),
+                fotoBytes,
+                fotoContentType
+        );
+
+        return new PerfilDeportivoResponse(
+                usuario.getId().toString(),
+                usuario.getPosicionJuego() != null ? usuario.getPosicionJuego().name() : null,
+                usuario.getNumeroCamiseta(),
+                fotoBytes != null,
+                "Perfil deportivo actualizado exitosamente"
+        );
+    }
+
+    private RegistroResponse respuestaRegistro(Usuario usuario, String mensaje) {
         return new RegistroResponse(
-            usuario.getUsuarioId(),
-            usuario.getEstado(),
-            usuario.getRol(),
-            "Usuario registrado exitosamente. Se ha enviado un código OTP a tu correo."
+            usuario.getId().toString(),
+            usuario.getEstado().name(),
+            usuario.getRol().name(),
+            mensaje
+        );
+    }
+
+    private PerfilResponse respuestaPerfil(Usuario usuario) {
+        return new PerfilResponse(
+            usuario.getId().toString(),
+            usuario.getNombreCompleto(),
+            usuario.getCorreo(),
+            usuario.getTipoUsuario().name(),
+            usuario.getRol().name(),
+            usuario.getEstado().name(),
+            usuario.getTipoIdentificacion().name(),
+            usuario.getNumeroIdentificacion(),
+            usuario.getProgramaAcademico(),
+            usuario.getSemestre(),
+            usuario.getVerificadoOTP(),
+            usuario.getFechaRegistro()
         );
     }
 }
