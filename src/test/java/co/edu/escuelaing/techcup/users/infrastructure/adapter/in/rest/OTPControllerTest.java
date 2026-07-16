@@ -61,7 +61,7 @@ class OTPControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"usuarioId\":\"no-es-un-uuid\",\"codigoOTP\":\"123456\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("El usuarioId no tiene un formato UUID válido"));
+                .andExpect(jsonPath("$.error").value("El campo 'usuarioId' no tiene un formato UUID válido"));
 
         verifyNoInteractions(verificarOTPUseCase);
     }

@@ -1,6 +1,7 @@
 package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.BadRequestException;
@@ -41,7 +42,7 @@ class CrearAdminOrganizadorServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
         Usuario resultado = service.crearAdminOrganizador(
-                "Grace Hopper", "grace@techcup.com", "CC", "999888", UserRole.ADMIN);
+                "Grace Hopper", "grace@techcup.com", TipoIdentificacion.CC, "999888", UserRole.ADMIN);
 
         assertThat(resultado.getTipoUsuario()).isEqualTo(UserType.ADMIN);
         assertThat(resultado.getRol()).isEqualTo(UserRole.ADMIN);
@@ -51,7 +52,7 @@ class CrearAdminOrganizadorServiceTest {
     @Test
     void rechazaRolDistintoDeAdminUOrganizer() {
         assertThatThrownBy(() -> service.crearAdminOrganizador(
-                "Jugador X", "jugadorx@techcup.com", "CC", "111222", UserRole.PLAYER))
+                "Jugador X", "jugadorx@techcup.com", TipoIdentificacion.CC, "111222", UserRole.PLAYER))
                 .isInstanceOf(BadRequestException.class);
 
         verifyNoInteractions(registroOrchestrator, emailSender);

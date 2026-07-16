@@ -5,23 +5,23 @@ import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
 import co.edu.escuelaing.techcup.users.core.exception.IdentityIntegrationException;
 import co.edu.escuelaing.techcup.users.core.ports.out.IdentityCredentialsPort;
 import co.edu.escuelaing.techcup.users.core.ports.out.UsuarioRepositoryPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Orquesta el registro común a todos los tipos de usuario: valida
+ * duplicados, hashea la contraseña, persiste el perfil local y crea las
+ * credenciales en Identity Service, compensando (borrando el perfil local)
+ * si esa integración falla.
+ */
 @Component
+@RequiredArgsConstructor
 class RegistroOrchestrator {
 
     private final UsuarioRepositoryPort usuarioRepository;
     private final IdentityCredentialsPort identityCredentialsPort;
     private final BCryptPasswordEncoder passwordEncoder;
-
-    RegistroOrchestrator(UsuarioRepositoryPort usuarioRepository,
-                          IdentityCredentialsPort identityCredentialsPort,
-                          BCryptPasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.identityCredentialsPort = identityCredentialsPort;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     Usuario registrar(Usuario usuario, String contrasenaPlano) {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {

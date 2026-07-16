@@ -1,17 +1,24 @@
 package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.BadRequestException;
 import co.edu.escuelaing.techcup.users.core.ports.in.CrearAdminOrganizadorUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.out.EmailSenderPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
 import java.util.Set;
 
+/**
+ * Crea un usuario administrador u organizador con contraseña temporal,
+ * generada por un administrador de la plataforma.
+ */
 @Service
+@RequiredArgsConstructor
 public class CrearAdminOrganizadorService implements CrearAdminOrganizadorUseCase {
 
     private static final Set<UserRole> ROLES_PERMITIDOS = EnumSet.of(UserRole.ADMIN, UserRole.ORGANIZER);
@@ -19,14 +26,9 @@ public class CrearAdminOrganizadorService implements CrearAdminOrganizadorUseCas
     private final RegistroOrchestrator registroOrchestrator;
     private final EmailSenderPort emailSender;
 
-    public CrearAdminOrganizadorService(RegistroOrchestrator registroOrchestrator, EmailSenderPort emailSender) {
-        this.registroOrchestrator = registroOrchestrator;
-        this.emailSender = emailSender;
-    }
-
     @Override
     public Usuario crearAdminOrganizador(String nombreCompleto, String correo,
-                                          String tipoIdentificacion, String numeroIdentificacion,
+                                          TipoIdentificacion tipoIdentificacion, String numeroIdentificacion,
                                           UserRole rol) {
         if (!ROLES_PERMITIDOS.contains(rol)) {
             throw new BadRequestException("El rol debe ser ADMIN u ORGANIZER");

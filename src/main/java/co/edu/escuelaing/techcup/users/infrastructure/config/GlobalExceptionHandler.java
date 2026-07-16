@@ -2,8 +2,10 @@ package co.edu.escuelaing.techcup.users.infrastructure.config;
 
 import co.edu.escuelaing.techcup.users.core.exception.BadRequestException;
 import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
+import co.edu.escuelaing.techcup.users.core.exception.EmailSenderException;
 import co.edu.escuelaing.techcup.users.core.exception.IdentityIntegrationException;
 import co.edu.escuelaing.techcup.users.core.exception.NotFoundException;
+import co.edu.escuelaing.techcup.users.core.exception.TeamsIntegrationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -37,6 +39,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IdentityIntegrationException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public Map<String, Object> handleIdentityIntegration(IdentityIntegrationException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(EmailSenderException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public Map<String, Object> handleEmailSender(EmailSenderException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(TeamsIntegrationException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public Map<String, Object> handleTeamsIntegration(TeamsIntegrationException ex) {
         return Map.of("error", ex.getMessage());
     }
 

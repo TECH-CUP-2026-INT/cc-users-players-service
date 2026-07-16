@@ -1,13 +1,16 @@
 package co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.PosicionJuego;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
+import co.edu.escuelaing.techcup.users.core.ports.in.ActualizarPerfilDeportivoUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.ActualizarRolUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.ConsultarPerfilUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.CrearAdminOrganizadorUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.CrearArbitroUseCase;
+import co.edu.escuelaing.techcup.users.core.ports.in.DeshabilitarUsuarioUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.EditarPerfilUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.RegistroEgresadoUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.in.RegistroEstudianteUseCase;
@@ -22,7 +25,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +40,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -70,6 +76,10 @@ class UsuarioControllerTest {
     private EditarPerfilUseCase editarPerfilUseCase;
     @MockBean
     private ActualizarRolUseCase actualizarRolUseCase;
+    @MockBean
+    private DeshabilitarUsuarioUseCase deshabilitarUsuarioUseCase;
+    @MockBean
+    private ActualizarPerfilDeportivoUseCase actualizarPerfilDeportivoUseCase;
 
     @AfterEach
     void limpiarContextoDeSeguridad() {
@@ -80,6 +90,7 @@ class UsuarioControllerTest {
         Usuario usuario = new Usuario();
         usuario.setTipoUsuario(tipo);
         usuario.setRol(rol);
+        usuario.setTipoIdentificacion(co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion.CC);
         return usuario;
     }
 
@@ -270,5 +281,70 @@ class UsuarioControllerTest {
                         .content("{\"rol\":\"CAPTAIN\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rolAsignado").value("CAPTAIN"));
+    }
+
+    @Test
+    void deshabilitaUsuarioComoAdmin() throws Exception {
+        UUID userId = UUID.randomUUID();
+        Usuario usuario = usuarioDePrueba(UserType.STUDENT, UserRole.PLAYER);
+        usuario.setEstado(co.edu.escuelaing.techcup.users.core.domain.enums.AccountStatus.INACTIVE);
+        when(deshabilitarUsuarioUseCase.deshabilitarUsuario(eq(userId), eq("Incumplimiento de normas")))
+                .thenReturn(usuario);
+
+        mockMvc.perform(put("/usuarios/admin/" + userId + "/deshabilitar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"motivo\":\"Incumplimiento de normas\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estadoCuenta").value("INACTIVE"));
+    }
+
+    @Test
+    void devuelve409SiElUsuarioEstaInscritoEnUnTorneoActivo() throws Exception {
+        UUID userId = UUID.randomUUID();
+        when(deshabilitarUsuarioUseCase.deshabilitarUsuario(eq(userId), any()))
+                .thenThrow(new ConflictException(
+                        "No se puede deshabilitar: el usuario está inscrito en un torneo activo o en curso"));
+
+        mockMvc.perform(put("/usuarios/admin/" + userId + "/deshabilitar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void actualizaPerfilDeportivoPropio() throws Exception {
+        UUID userId = UUID.randomUUID();
+        Usuario usuario = usuarioDePrueba(UserType.STUDENT, UserRole.PLAYER);
+        usuario.setId(userId);
+        usuario.setPosicionJuego(PosicionJuego.FORWARD);
+        usuario.setNumeroCamiseta(9);
+        when(actualizarPerfilDeportivoUseCase.actualizarPerfilDeportivo(eq(userId), eq(PosicionJuego.FORWARD), eq(9), any(), any()))
+                .thenReturn(usuario);
+        autenticarComo(userId);
+
+        var perfilPart = new MockMultipartFile(
+                "perfil", "", MediaType.APPLICATION_JSON_VALUE,
+                "{\"posicionJuego\":\"FORWARD\",\"numeroCamiseta\":9}".getBytes());
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/usuarios/perfil/deportivo").file(perfilPart))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.posicionJuego").value("FORWARD"))
+                .andExpect(jsonPath("$.numeroCamiseta").value(9));
+    }
+
+    @Test
+    void devuelve409SiElNumeroDeCamisetaYaEstaEnUso() throws Exception {
+        UUID userId = UUID.randomUUID();
+        when(actualizarPerfilDeportivoUseCase.actualizarPerfilDeportivo(eq(userId), any(), eq(9), any(), any()))
+                .thenThrow(new ConflictException("El número de camiseta ya está en uso en tu equipo"));
+        autenticarComo(userId);
+
+        var perfilPart = new MockMultipartFile(
+                "perfil", "", MediaType.APPLICATION_JSON_VALUE,
+                "{\"numeroCamiseta\":9}".getBytes());
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/usuarios/perfil/deportivo").file(perfilPart))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("El número de camiseta ya está en uso en tu equipo"));
     }
 }

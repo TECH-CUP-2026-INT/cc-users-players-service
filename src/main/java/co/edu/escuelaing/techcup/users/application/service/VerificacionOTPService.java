@@ -8,13 +8,19 @@ import co.edu.escuelaing.techcup.users.core.ports.in.VerificarOTPUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.out.OTPRepositoryPort;
 import co.edu.escuelaing.techcup.users.core.ports.out.UsuarioRepositoryPort;
 import co.edu.escuelaing.techcup.users.core.ports.out.EmailSenderPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Genera, envía y verifica códigos OTP de un solo uso, aplicando límites de
+ * expiración e intentos fallidos configurables.
+ */
 @Service
+@RequiredArgsConstructor
 public class VerificacionOTPService implements VerificarOTPUseCase {
 
     private final OTPRepositoryPort otpRepository;
@@ -26,14 +32,6 @@ public class VerificacionOTPService implements VerificarOTPUseCase {
 
     @Value("${app.otp.max-attempts}")
     private int maxAttempts;
-
-    public VerificacionOTPService(OTPRepositoryPort otpRepository,
-                                  UsuarioRepositoryPort usuarioRepository,
-                                  EmailSenderPort emailSender) {
-        this.otpRepository = otpRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.emailSender = emailSender;
-    }
 
     @Override
     public void generarYEnviarOTP(UUID usuarioId, String email) {

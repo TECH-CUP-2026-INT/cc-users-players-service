@@ -2,6 +2,7 @@ package co.edu.escuelaing.techcup.users.infrastructure.adapter.out.repository;
 
 import co.edu.escuelaing.techcup.users.core.domain.OTP;
 import co.edu.escuelaing.techcup.users.core.ports.out.OTPRepositoryPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -10,14 +11,15 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Adaptador de persistencia de {@link OTP} sobre la colección {@code otps}
+ * de MongoDB, usando {@link MongoTemplate} directamente.
+ */
 @Repository
+@RequiredArgsConstructor
 public class OTPRepositoryImpl implements OTPRepositoryPort {
 
     private final MongoTemplate mongoTemplate;
-
-    public OTPRepositoryImpl(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-    }
 
     @Override
     public OTP save(OTP otp) {

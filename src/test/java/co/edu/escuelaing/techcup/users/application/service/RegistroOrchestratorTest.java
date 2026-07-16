@@ -1,6 +1,7 @@
 package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
@@ -40,7 +41,7 @@ class RegistroOrchestratorTest {
         Usuario usuario = new Usuario();
         usuario.setNombreCompleto("Ada Lovelace");
         usuario.setCorreo("ada@guest.com");
-        usuario.setTipoIdentificacion("CC");
+        usuario.setTipoIdentificacion(TipoIdentificacion.CC);
         usuario.setNumeroIdentificacion("123456");
         usuario.setTipoUsuario(UserType.GUEST);
         return usuario;

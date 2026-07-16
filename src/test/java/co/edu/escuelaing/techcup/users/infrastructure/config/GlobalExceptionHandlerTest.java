@@ -3,6 +3,7 @@ package co.edu.escuelaing.techcup.users.infrastructure.config;
 import co.edu.escuelaing.techcup.users.core.exception.BadRequestException;
 import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
 import co.edu.escuelaing.techcup.users.core.exception.IdentityIntegrationException;
+import co.edu.escuelaing.techcup.users.core.exception.TeamsIntegrationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
@@ -35,6 +36,13 @@ class GlobalExceptionHandlerTest {
         Map<String, Object> body = handler.handleIdentityIntegration(
                 new IdentityIntegrationException("identity caída", new RuntimeException()));
         assertThat(body).containsEntry("error", "identity caída");
+    }
+
+    @Test
+    void manejaTeamsIntegrationException() {
+        Map<String, Object> body = handler.handleTeamsIntegration(
+                new TeamsIntegrationException("teams caída", new RuntimeException()));
+        assertThat(body).containsEntry("error", "teams caída");
     }
 
     @Test

@@ -23,7 +23,10 @@ public class SecurityConfig {
             "/usuarios/registro/invitado",
             "/usuarios/registro/egresado",
             "/otp/**",
-            "/internal/**"
+            "/internal/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     };
 
     @Bean

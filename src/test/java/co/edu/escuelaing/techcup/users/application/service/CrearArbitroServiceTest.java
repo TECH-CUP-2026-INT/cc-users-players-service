@@ -1,6 +1,7 @@
 package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.ports.out.EmailSenderPort;
@@ -37,7 +38,7 @@ class CrearArbitroServiceTest {
         when(registroOrchestrator.registrar(any(Usuario.class), anyString()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Usuario resultado = service.crearArbitro("Juan Referí", "juan@techcup.com", "CC", "555444");
+        Usuario resultado = service.crearArbitro("Juan Referí", "juan@techcup.com", TipoIdentificacion.CC, "555444");
 
         assertThat(resultado.getTipoUsuario()).isEqualTo(UserType.REFEREE);
         assertThat(resultado.getRol()).isEqualTo(UserRole.REFEREE);

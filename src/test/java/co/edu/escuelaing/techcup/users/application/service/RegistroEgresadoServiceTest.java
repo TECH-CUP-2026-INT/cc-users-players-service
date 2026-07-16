@@ -1,6 +1,7 @@
 package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.TipoIdentificacion;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class RegistroEgresadoServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
         Usuario resultado = service.registrarEgresado(
-                "Egresado Uno", "egresado@gmail.com", "Password123!", "CC", "444555", "Ingeniería de Sistemas");
+                "Egresado Uno", "egresado@gmail.com", "Password123!", TipoIdentificacion.CC, "444555", "Ingeniería de Sistemas");
 
         assertThat(resultado.getTipoUsuario()).isEqualTo(UserType.GRADUATE);
         assertThat(resultado.getProgramaAcademico()).isEqualTo("Ingeniería de Sistemas");

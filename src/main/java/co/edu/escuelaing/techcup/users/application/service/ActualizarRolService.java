@@ -7,22 +7,22 @@ import co.edu.escuelaing.techcup.users.core.exception.NotFoundException;
 import co.edu.escuelaing.techcup.users.core.ports.in.ActualizarRolUseCase;
 import co.edu.escuelaing.techcup.users.core.ports.out.IdentityCredentialsPort;
 import co.edu.escuelaing.techcup.users.core.ports.out.UsuarioRepositoryPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Cambia el rol de un usuario y sincroniza el cambio con Identity Service,
+ * revirtiendo el cambio local si la sincronización falla.
+ */
 @Service
+@RequiredArgsConstructor
 public class ActualizarRolService implements ActualizarRolUseCase {
 
     private final UsuarioRepositoryPort usuarioRepository;
     private final IdentityCredentialsPort identityCredentialsPort;
-
-    public ActualizarRolService(UsuarioRepositoryPort usuarioRepository,
-                                 IdentityCredentialsPort identityCredentialsPort) {
-        this.usuarioRepository = usuarioRepository;
-        this.identityCredentialsPort = identityCredentialsPort;
-    }
 
     @Override
     public Usuario actualizarRol(UUID userId, UserRole nuevoRol) {

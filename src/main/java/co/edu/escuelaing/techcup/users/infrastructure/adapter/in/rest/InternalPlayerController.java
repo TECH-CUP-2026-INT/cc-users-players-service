@@ -7,6 +7,8 @@ import co.edu.escuelaing.techcup.users.core.ports.in.VerificarExistenciaJugadorU
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.CapitaniaResponse;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.ExisteResponse;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.PerfilPublicoResponse;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest.swagger.InternalPlayerControllerSwagger;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,25 +18,20 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/internal/players")
-public class InternalPlayerController {
+@RequiredArgsConstructor
+public class InternalPlayerController implements InternalPlayerControllerSwagger {
 
     private final VerificarExistenciaJugadorUseCase verificarExistenciaJugadorUseCase;
     private final ConsultarPerfilUseCase consultarPerfilUseCase;
     private final VerificarCapitaniaUseCase verificarCapitaniaUseCase;
 
-    public InternalPlayerController(VerificarExistenciaJugadorUseCase verificarExistenciaJugadorUseCase,
-                                     ConsultarPerfilUseCase consultarPerfilUseCase,
-                                     VerificarCapitaniaUseCase verificarCapitaniaUseCase) {
-        this.verificarExistenciaJugadorUseCase = verificarExistenciaJugadorUseCase;
-        this.consultarPerfilUseCase = consultarPerfilUseCase;
-        this.verificarCapitaniaUseCase = verificarCapitaniaUseCase;
-    }
-
+    @Override
     @GetMapping("/{playerId}/exists")
     public ExisteResponse existe(@PathVariable UUID playerId) {
         return new ExisteResponse(verificarExistenciaJugadorUseCase.existe(playerId));
     }
 
+    @Override
     @GetMapping("/{playerId}/profile")
     public PerfilPublicoResponse perfil(@PathVariable UUID playerId) {
         Usuario usuario = consultarPerfilUseCase.consultarPerfil(playerId);
@@ -47,6 +44,7 @@ public class InternalPlayerController {
         );
     }
 
+    @Override
     @GetMapping("/{playerId}/captaincy")
     public CapitaniaResponse capitania(@PathVariable UUID playerId) {
         return new CapitaniaResponse(verificarCapitaniaUseCase.esCapitan(playerId));

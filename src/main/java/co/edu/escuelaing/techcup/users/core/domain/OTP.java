@@ -1,8 +1,17 @@
 package co.edu.escuelaing.techcup.users.core.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Código de verificación de un solo uso (OTP) asociado a un usuario, usado
+ * para confirmar identidad tras el registro o el login.
+ */
+@Getter
+@Setter
 public class OTP {
     private UUID id;
     private UUID usuarioId;
@@ -19,18 +28,4 @@ public class OTP {
         this.fechaCreacion = LocalDateTime.now();
     }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public UUID getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(UUID usuarioId) { this.usuarioId = usuarioId; }
-    public String getCodigoOTP() { return codigoOTP; }
-    public void setCodigoOTP(String codigoOTP) { this.codigoOTP = codigoOTP; }
-    public LocalDateTime getFechaExpiracion() { return fechaExpiracion; }
-    public void setFechaExpiracion(LocalDateTime fechaExpiracion) { this.fechaExpiracion = fechaExpiracion; }
-    public Boolean getUsado() { return usado; }
-    public void setUsado(Boolean usado) { this.usado = usado; }
-    public Integer getIntentosFallidos() { return intentosFallidos; }
-    public void setIntentosFallidos(Integer intentosFallidos) { this.intentosFallidos = intentosFallidos; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

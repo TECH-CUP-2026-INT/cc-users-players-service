@@ -1,10 +1,12 @@
 package co.edu.escuelaing.techcup.users.infrastructure.adapter.out.identity;
 
+import co.edu.escuelaing.techcup.users.core.domain.enums.AccountStatus;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserRole;
 import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.IdentityIntegrationException;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.out.identity.dto.CreateCredentialsRequestDTO;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.out.identity.dto.UpdateRoleRequestDTO;
+import co.edu.escuelaing.techcup.users.infrastructure.adapter.out.identity.dto.UpdateStatusRequestDTO;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,6 +65,21 @@ class IdentityCredentialsAdapterTest {
         doThrow(mock(FeignException.class)).when(identityFeignClient).actualizarRol(any(), any());
 
         assertThatThrownBy(() -> adapter.actualizarRol("u1", UserRole.CAPTAIN))
+                .isInstanceOf(IdentityIntegrationException.class);
+    }
+
+    @Test
+    void envíaElPutDeActualizarEstadoAIdentity() {
+        adapter.actualizarEstado("u1", AccountStatus.INACTIVE);
+
+        verify(identityFeignClient).actualizarEstado(eq("u1"), eq(new UpdateStatusRequestDTO(AccountStatus.INACTIVE)));
+    }
+
+    @Test
+    void lanzaIdentityIntegrationExceptionSiFallaLaActualizacionDeEstado() {
+        doThrow(mock(FeignException.class)).when(identityFeignClient).actualizarEstado(any(), any());
+
+        assertThatThrownBy(() -> adapter.actualizarEstado("u1", AccountStatus.INACTIVE))
                 .isInstanceOf(IdentityIntegrationException.class);
     }
 }

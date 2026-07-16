@@ -1,20 +1,23 @@
 package co.edu.escuelaing.techcup.users.infrastructure.adapter.out.email;
 
+import co.edu.escuelaing.techcup.users.core.exception.EmailSenderException;
 import co.edu.escuelaing.techcup.users.core.ports.out.EmailSenderPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import jakarta.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
 
+/**
+ * Adaptador saliente que envía correos transaccionales (OTP y credenciales
+ * temporales) vía SMTP, con plantillas HTML embebidas.
+ */
 @Component
+@RequiredArgsConstructor
 public class EmailSenderAdapter implements EmailSenderPort {
 
     private final JavaMailSender mailSender;
-
-    public EmailSenderAdapter(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
 
     @Override
     public void enviarCorreoOTP(String destinatario, String codigoOTP) {
@@ -28,7 +31,7 @@ public class EmailSenderAdapter implements EmailSenderPort {
 
             mailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Error al enviar el correo", e);
+            throw new EmailSenderException("No se pudo enviar el correo con el código OTP", e);
         }
     }
 
@@ -44,7 +47,7 @@ public class EmailSenderAdapter implements EmailSenderPort {
 
             mailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Error al enviar el correo", e);
+            throw new EmailSenderException("No se pudo enviar el correo con las credenciales temporales", e);
         }
     }
 
