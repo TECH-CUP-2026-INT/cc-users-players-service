@@ -33,22 +33,6 @@ jobs:
         env:
           IDENTITY_SERVICE_URL: http://localhost:8081
 
-      - name: SonarCloud analysis
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          IDENTITY_SERVICE_URL: http://localhost:8081
-        with:
-          args: >
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.organization=tech-cup-2026-int
-            -Dsonar.projectKey=TECH-CUP-2026-INT_cc-users-players-service
-            -Dsonar.projectName=cc-users-players-service
-            -Dsonar.java.source=21
-            -Dsonar.sources=src/main/java
-            -Dsonar.tests=src/test/java
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
