@@ -7,7 +7,13 @@ import co.edu.escuelaing.techcup.users.core.ports.in.VerificarExistenciaJugadorU
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.CapitaniaResponse;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.ExisteResponse;
 import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto.PerfilPublicoResponse;
-import co.edu.escuelaing.techcup.users.infrastructure.adapter.in.rest.swagger.InternalPlayerControllerSwagger;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,22 +24,32 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/internal/players")
+@Tag(name = "Internal - Players", description = "Endpoints internos consumidos por otros microservicios (hoy, Teams Service)")
 @RequiredArgsConstructor
-public class InternalPlayerController implements InternalPlayerControllerSwagger {
+public class InternalPlayerController {
 
     private final VerificarExistenciaJugadorUseCase verificarExistenciaJugadorUseCase;
     private final ConsultarPerfilUseCase consultarPerfilUseCase;
     private final VerificarCapitaniaUseCase verificarCapitaniaUseCase;
 
-    @Override
+    @Operation(summary = "Verificar existencia de un jugador",
+            description = "Consumido por Teams Service antes de invitar a un jugador a un equipo.")
+    @ApiResponse(responseCode = "200", description = "Resultado de la verificación",
+            content = @Content(schema = @Schema(implementation = ExisteResponse.class)))
     @GetMapping("/{playerId}/exists")
-    public ExisteResponse existe(@PathVariable UUID playerId) {
+    public ExisteResponse existe(@Parameter(description = "Id del jugador") @PathVariable UUID playerId) {
         return new ExisteResponse(verificarExistenciaJugadorUseCase.existe(playerId));
     }
 
-    @Override
+    @Operation(summary = "Obtener perfil público de un jugador",
+            description = "Consumido por Teams Service para mostrar los datos de los miembros de un equipo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil público del jugador",
+                    content = @Content(schema = @Schema(implementation = PerfilPublicoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "El jugador no existe", content = @Content)
+    })
     @GetMapping("/{playerId}/profile")
-    public PerfilPublicoResponse perfil(@PathVariable UUID playerId) {
+    public PerfilPublicoResponse perfil(@Parameter(description = "Id del jugador") @PathVariable UUID playerId) {
         Usuario usuario = consultarPerfilUseCase.consultarPerfil(playerId);
         return new PerfilPublicoResponse(
                 usuario.getId().toString(),
@@ -44,9 +60,12 @@ public class InternalPlayerController implements InternalPlayerControllerSwagger
         );
     }
 
-    @Override
+    @Operation(summary = "Verificar si un jugador es capitán",
+            description = "Consumido por Teams Service para validar transferencias de capitanía.")
+    @ApiResponse(responseCode = "200", description = "Resultado de la verificación",
+            content = @Content(schema = @Schema(implementation = CapitaniaResponse.class)))
     @GetMapping("/{playerId}/captaincy")
-    public CapitaniaResponse capitania(@PathVariable UUID playerId) {
+    public CapitaniaResponse capitania(@Parameter(description = "Id del jugador") @PathVariable UUID playerId) {
         return new CapitaniaResponse(verificarCapitaniaUseCase.esCapitan(playerId));
     }
 }
