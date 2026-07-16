@@ -1,21 +1,26 @@
-﻿package co.edu.escuelaing.techcup.users.infrastructure.adapter.out.repository;
+package co.edu.escuelaing.techcup.users.infrastructure.adapter.out.repository;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
 import co.edu.escuelaing.techcup.users.core.ports.out.UsuarioRepositoryPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
+import java.util.UUID;
 
+/**
+ * Adaptador de persistencia de {@link Usuario} sobre la colección
+ * {@code usuarios} de MongoDB, usando {@link MongoTemplate} directamente
+ * (sin Spring Data Repository) para tener control explícito de las
+ * consultas.
+ */
 @Repository
+@RequiredArgsConstructor
 public class UsuarioRepositoryImpl implements UsuarioRepositoryPort {
 
     private final MongoTemplate mongoTemplate;
-
-    public UsuarioRepositoryImpl(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-    }
 
     @Override
     public Usuario save(Usuario usuario) {
@@ -23,9 +28,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryPort {
     }
 
     @Override
-    public Optional<Usuario> findByUsuarioId(String usuarioId) {
-        Query query = new Query(Criteria.where("usuarioId").is(usuarioId));
-        return Optional.ofNullable(mongoTemplate.findOne(query, Usuario.class, "usuarios"));
+    public Optional<Usuario> findById(UUID id) {
+        return Optional.ofNullable(mongoTemplate.findById(id, Usuario.class, "usuarios"));
     }
 
     @Override
@@ -50,5 +54,11 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryPort {
     public boolean existsByNumeroIdentificacion(String numeroIdentificacion) {
         Query query = new Query(Criteria.where("numeroIdentificacion").is(numeroIdentificacion));
         return mongoTemplate.exists(query, "usuarios");
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Query query = new Query(Criteria.where("_id").is(id));
+        mongoTemplate.remove(query, Usuario.class, "usuarios");
     }
 }
