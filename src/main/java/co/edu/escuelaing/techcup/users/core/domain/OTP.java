@@ -1,10 +1,11 @@
-﻿package co.edu.escuelaing.techcup.users.core.domain;
+package co.edu.escuelaing.techcup.users.core.domain;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class OTP {
-    private String id;
-    private String usuarioId;
+    private UUID id;
+    private UUID usuarioId;
     private String codigoOTP;
     private LocalDateTime fechaExpiracion;
     private Boolean usado;
@@ -12,15 +13,16 @@ public class OTP {
     private LocalDateTime fechaCreacion;
 
     public OTP() {
+        this.id = UUID.randomUUID();
         this.usado = false;
         this.intentosFallidos = 0;
         this.fechaCreacion = LocalDateTime.now();
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public String getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public UUID getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(UUID usuarioId) { this.usuarioId = usuarioId; }
     public String getCodigoOTP() { return codigoOTP; }
     public void setCodigoOTP(String codigoOTP) { this.codigoOTP = codigoOTP; }
     public LocalDateTime getFechaExpiracion() { return fechaExpiracion; }

@@ -1,4 +1,4 @@
-﻿package co.edu.escuelaing.techcup.users.core.ports.in;
+package co.edu.escuelaing.techcup.users.core.ports.in;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
 

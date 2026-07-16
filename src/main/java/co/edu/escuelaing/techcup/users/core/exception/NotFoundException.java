@@ -1,4 +1,4 @@
-﻿package co.edu.escuelaing.techcup.users.core.exception;
+package co.edu.escuelaing.techcup.users.core.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

@@ -1,4 +1,4 @@
-﻿package co.edu.escuelaing.techcup.users.application.service;
+package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.OTP;
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class VerificacionOTPService implements VerificarOTPUseCase {
@@ -20,10 +21,10 @@ public class VerificacionOTPService implements VerificarOTPUseCase {
     private final UsuarioRepositoryPort usuarioRepository;
     private final EmailSenderPort emailSender;
 
-    @Value("\")
+    @Value("${app.otp.expiration-minutes}")
     private int expirationMinutes;
 
-    @Value("\")
+    @Value("${app.otp.max-attempts}")
     private int maxAttempts;
 
     public VerificacionOTPService(OTPRepositoryPort otpRepository,
@@ -35,7 +36,7 @@ public class VerificacionOTPService implements VerificarOTPUseCase {
     }
 
     @Override
-    public void generarYEnviarOTP(String usuarioId, String email) {
+    public void generarYEnviarOTP(UUID usuarioId, String email) {
         String codigo = String.format("%06d", new Random().nextInt(999999));
         LocalDateTime fechaExpiracion = LocalDateTime.now().plusMinutes(expirationMinutes);
 
@@ -49,7 +50,7 @@ public class VerificacionOTPService implements VerificarOTPUseCase {
     }
 
     @Override
-    public void verificarOTP(String usuarioId, String codigoIngresado) {
+    public void verificarOTP(UUID usuarioId, String codigoIngresado) {
         OTP otp = otpRepository.findTopByUsuarioIdAndUsadoFalseAndFechaExpiracionAfter(
             usuarioId, LocalDateTime.now()
         ).orElseThrow(() -> new BadRequestException("Código OTP inválido o expirado"));
@@ -67,7 +68,7 @@ public class VerificacionOTPService implements VerificarOTPUseCase {
         otp.setUsado(true);
         otpRepository.save(otp);
 
-        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId)
+        Usuario usuario = usuarioRepository.findById(usuarioId)
             .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         usuario.setVerificadoOTP(true);
         usuarioRepository.save(usuario);

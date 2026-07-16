@@ -1,12 +1,10 @@
-﻿package co.edu.escuelaing.techcup.users.application.service;
+package co.edu.escuelaing.techcup.users.application.service;
 
 import co.edu.escuelaing.techcup.users.core.domain.Usuario;
+import co.edu.escuelaing.techcup.users.core.domain.enums.UserType;
 import co.edu.escuelaing.techcup.users.core.exception.BadRequestException;
-import co.edu.escuelaing.techcup.users.core.exception.ConflictException;
 import co.edu.escuelaing.techcup.users.core.ports.in.RegistroEstudianteUseCase;
-import co.edu.escuelaing.techcup.users.core.ports.out.UsuarioRepositoryPort;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
@@ -14,19 +12,16 @@ import java.util.List;
 @Service
 public class RegistroEstudianteService implements RegistroEstudianteUseCase {
 
-    private final UsuarioRepositoryPort usuarioRepository;
+    private final RegistroOrchestrator registroOrchestrator;
     private final VerificacionOTPService otpService;
-    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Value("\")
+    @Value("${app.allowed-domains}")
     private String allowedDomainsConfig;
 
-    public RegistroEstudianteService(UsuarioRepositoryPort usuarioRepository,
-                                     VerificacionOTPService otpService,
-                                     BCryptPasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
+    public RegistroEstudianteService(RegistroOrchestrator registroOrchestrator,
+                                     VerificacionOTPService otpService) {
+        this.registroOrchestrator = registroOrchestrator;
         this.otpService = otpService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -35,25 +30,17 @@ public class RegistroEstudianteService implements RegistroEstudianteUseCase {
                                        String tipoIdentificacion, String numeroIdentificacion) {
         validarDominioCorreo(correo);
 
-        if (usuarioRepository.existsByCorreo(correo)) {
-            throw new ConflictException("El correo ya está registrado");
-        }
-
-        if (usuarioRepository.existsByNumeroIdentificacion(numeroIdentificacion)) {
-            throw new ConflictException("El número de identificación ya está registrado");
-        }
-
         Usuario usuario = new Usuario();
         usuario.setNombreCompleto(nombreCompleto);
         usuario.setCorreo(correo);
-        usuario.setContrasenaHash(passwordEncoder.encode(contrasena));
         usuario.setProgramaAcademico(programaAcademico);
         usuario.setSemestre(semestre);
         usuario.setTipoIdentificacion(tipoIdentificacion);
         usuario.setNumeroIdentificacion(numeroIdentificacion);
+        usuario.setTipoUsuario(UserType.STUDENT);
 
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-        otpService.generarYEnviarOTP(usuarioGuardado.getUsuarioId(), usuarioGuardado.getCorreo());
+        Usuario usuarioGuardado = registroOrchestrator.registrar(usuario, contrasena);
+        otpService.generarYEnviarOTP(usuarioGuardado.getId(), usuarioGuardado.getCorreo());
 
         return usuarioGuardado;
     }

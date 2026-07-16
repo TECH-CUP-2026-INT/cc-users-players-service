@@ -1,4 +1,4 @@
-﻿package co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto;
+package co.edu.escuelaing.techcup.users.infrastructure.adapter.in.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
