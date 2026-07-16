@@ -40,6 +40,7 @@ jobs:
           IDENTITY_SERVICE_URL: http://localhost:8081
         with:
           args: >
+            -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.organization=tech-cup-2026-int
             -Dsonar.projectKey=TECH-CUP-2026-INT_cc-users-players-service
             -Dsonar.projectName=cc-users-players-service
