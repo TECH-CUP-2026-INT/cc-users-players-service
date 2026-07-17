@@ -5,11 +5,12 @@ team, as part of the TechCup Fútbol tournament platform.
 
 ## Members
 
-| Name | Role | Contact |
+| Name | Role |
 |---|---|---|
-| _To be completed_ | _To be completed_ | _To be completed_ |
-| _To be completed_ | _To be completed_ | _To be completed_ |
-| _To be completed_ | _To be completed_ | _To be completed_ |
+| Carlos Duban Rojas Riveros | Desarrollador |
+| Juan Eduardo Vera Acero | Desarrollador |
+| José Luis García Chinchilla | Desarrollador |
+| Willian Santiago Ruiz Medina | Desarrollador |
 
 !!! note "Pending"
     This table is a template. Update it with each team member's name, role
