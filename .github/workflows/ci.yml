@@ -108,14 +108,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set lowercase image repository
+        run: echo "IMAGE_REPO=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_REPO }}:latest
+            ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
 
   deploy:
     name: Deploy to Azure Container Apps
@@ -126,6 +128,8 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - name: Set lowercase image repository
+        run: echo "IMAGE_REPO=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - name: Azure login
         uses: azure/login@v2
         with:
@@ -135,4 +139,4 @@ jobs:
           az containerapp update \
             --name users-players-service \
             --resource-group techcup \
-            --image ghcr.io/${{ github.repository }}:latest
+            --image ghcr.io/${{ env.IMAGE_REPO }}:latest
