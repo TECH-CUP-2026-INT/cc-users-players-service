@@ -1,0 +1,57 @@
+﻿site_name: TechCup — Users & Players Service
+site_description: Technical documentation for the users and players microservice.
+site_author: TECH-CUP 2026 INT
+site_url: https://tech-cup-2026-int.github.io/cc-users-players-service/
+
+repo_name: TECH-CUP-2026-INT/cc-users-players-service
+repo_url: https://github.com/TECH-CUP-2026-INT/cc-users-players-service
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+
+nav:
+  - Home: index.md
+  - Architecture: arquitectura.md
+  - API: api.md
+  - Configuration: configuracion.md
