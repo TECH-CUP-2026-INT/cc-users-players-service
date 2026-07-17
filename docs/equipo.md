@@ -6,7 +6,7 @@ team, as part of the TechCup Fútbol tournament platform.
 ## Members
 
 | Name | Role |
-|---|---|---|
+|---|---|
 | Carlos Duban Rojas Riveros | Desarrollador |
 | Juan Eduardo Vera Acero | Desarrollador |
 | José Luis García Chinchilla | Desarrollador |
