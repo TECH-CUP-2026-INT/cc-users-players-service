@@ -2,7 +2,7 @@ name: CI - Build & Test
 
 on:
   push:
-    branches: [ 'feat/**', 'develop', 'main' ]
+    branches: [ 'feat/**', 'develop', 'main', 'qa' ]
   pull_request:
     branches: [ 'develop' ]
 
