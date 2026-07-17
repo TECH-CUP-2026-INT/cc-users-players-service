@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8084}
+  port: ${SERVER_PORT:5621}
   servlet:
     context-path: /api/v1
 
@@ -35,8 +35,8 @@ app:
 
 identity:
   service:
-    base-url: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+    base-url: ${IDENTITY_SERVICE_URL:http://localhost:5620}
 
 teams:
   service:
-    base-url: ${TEAMS_SERVICE_URL:http://localhost:8082}
+    base-url: ${TEAMS_SERVICE_URL:http://localhost:5622}
